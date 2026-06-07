@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grounding 5-4-3-2-1 · Tu espacio seguro</title>
+<style>
+  /* ─── Reset & Base ──────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --boxing:   #C0392B;
+    --boxing-d: #7B241C;
+    --river:    #1A7A8A;
+    --river-l:  #AED6F1;
+    --hair:     #7D3C98;
+    --hair-l:   #D7BDE2;
+    --gold:     #D4AC0D;
+    --dark:     #1C2833;
+    --white:    #FDFEFE;
+    --bg:       #0D1B2A;
+  }
+  html, body {
+    width: 100%; height: 100%;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--white);
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* ─── Stars background ──────────────────────────────────── */
+  #stars {
+    position: fixed; inset: 0; z-index: 0;
+    background: radial-gradient(ellipse at 50% 60%, #0d2a3a 0%, #060d14 100%);
+    overflow: hidden;
+  }
+  .star {
+    position: absolute;
+    border-radius: 50%;
+    background: white;
+    animation: twinkle var(--dur, 3s) infinite alternate;
+    opacity: var(--op, 0.6);
+  }
+  @keyframes twinkle { from { opacity: 0.1; } to { opacity: var(--op,0.7); } }
+
+  /* ─── Ripple water (bottom) ─────────────────────────────── */
+  #water {
+    position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; z-index: 0;
+    overflow: hidden;
+  }
+  .wave { position: absolute; bottom: 0; width: 200%; height: 80px; }
+  .wave path { fill: rgba(26,122,138,0.25); }
+  .wave:nth-child(1) { animation: wave1 6s linear infinite; }
+  .wave:nth-child(2) { bottom: 10px; animation: wave2 9s linear infinite; opacity:.6; }
+  @keyframes wave1 { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+  @keyframes wave2 { 0%{transform:translateX(-50%)} 100%{transform:translateX(0)} }
+
+  /* ─── Screens ───────────────────────────────────────────── */
+  .screen {
+    position: fixed; inset: 0; z-index: 10;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    transition: opacity .6s, transform .6s;
+  }
+  .screen.hidden { opacity: 0; pointer-events: none; transform: scale(.96); }
+
+  /* ─── Intro screen ──────────────────────────────────────── */
+  #s-intro { gap: 20px; }
+  #s-intro h1 {
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    background: linear-gradient(135deg, var(--boxing), var(--river), var(--hair));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    text-align: center; line-height: 1.2;
+  }
+  #s-intro p { color: #aaa; text-align:center; max-width:480px; line-height:1.7; font-size:1rem; }
+  .btn {
+    margin-top:12px; padding:16px 40px;
+    border:none; border-radius:50px; cursor:pointer;
+    font-size:1.1rem; font-weight:700; letter-spacing:.5px;
+    background: linear-gradient(135deg, var(--boxing), var(--hair));
+    color: white;
+    box-shadow: 0 4px 24px rgba(192,57,43,.4);
+    transition: transform .15s, box-shadow .15s;
+  }
+  .btn:hover { transform:translateY(-2px); box-shadow: 0 8px 32px rgba(192,57,43,.5); }
+  .btn:active { transform:translateY(0); }
+
+  /* ─── Breath screen ─────────────────────────────────────── */
+  #s-breath { gap: 24px; }
+  #breath-label { font-size: 1.4rem; color: var(--river-l); letter-spacing:1px; font-weight: 600; }
+  #breath-circle {
+    width: 180px; height: 180px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(26,122,138,.6), rgba(13,27,42,.2));
+    border: 3px solid var(--river);
+    animation: breathe 8s ease-in-out infinite;
+    box-shadow: 0 0 40px rgba(26,122,138,.4);
+    display: flex; align-items:center; justify-content:center;
+    font-size: 2.8rem;
+  }
+  @keyframes breathe {
+    0%,100%  { transform: scale(1);    box-shadow: 0 0 20px rgba(26,122,138,.3); }
+    40%      { transform: scale(1.45); box-shadow: 0 0 60px rgba(26,122,138,.7); }
+    60%      { transform: scale(1.45); box-shadow: 0 0 60px rgba(26,122,138,.7); }
+  }
+  #breath-text { color: #aaa; max-width:380px; text-align:center; line-height:1.6; }
+  #breath-counter { font-size: 3rem; font-weight:900; color: var(--gold); }
+
+  /* ─── Step screens ──────────────────────────────────────── */
+  .step-screen { gap: 0; }
+  .step-top {
+    width: 100%; max-width: 700px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 18px;
+  }
+  .step-num {
+    width: 64px; height: 64px; border-radius: 50%;
+    display: flex; align-items:center; justify-content:center;
+    font-size: 2rem; font-weight: 900;
+    flex-shrink: 0;
+  }
+  .step-heading { flex:1; }
+  .step-heading h2 { font-size: clamp(1.4rem, 4vw, 2rem); }
+  .step-heading p { color: #aaa; font-size: .9rem; margin-top: 4px; }
+  .step-sense-icon { font-size: 2.8rem; }
+
+  /* Cards grid */
+  .cards {
+    width: 100%; max-width: 700px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .card {
+    border-radius: 20px; padding: 18px 14px;
+    display: flex; flex-direction:column; align-items:center; gap: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform .2s, border-color .2s, box-shadow .2s;
+    background: rgba(255,255,255,.06);
+  }
+  .card:hover { transform: translateY(-4px); }
+  .card.selected { border-color: var(--gold); box-shadow: 0 0 20px rgba(212,172,13,.4); }
+  .card svg, .card .card-icon { width:64px; height:64px; }
+  .card .card-icon { font-size: 3rem; line-height:1; }
+  .card span { font-size: .88rem; text-align:center; color: #ddd; line-height:1.4; }
+
+  /* Progress dots */
+  #progress {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; z-index: 20;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: rgba(255,255,255,.2);
+    transition: background .4s, transform .3s;
+  }
+  .dot.active { background: var(--gold); transform: scale(1.4); }
+  .dot.done   { background: rgba(212,172,13,.5); }
+
+  /* Nav bar */
+  .nav {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 16px; z-index: 20;
+  }
+  .nav-btn {
+    padding: 12px 32px; border-radius: 50px; border: none;
+    font-size: 1rem; font-weight: 700; cursor: pointer;
+    transition: transform .15s, opacity .15s;
+  }
+  .nav-btn:hover { transform: translateY(-2px); }
+  #btn-prev { background: rgba(255,255,255,.1); color: #ccc; }
+  #btn-next { background: linear-gradient(135deg, var(--boxing), var(--hair)); color: white; }
+  #btn-next:disabled { opacity: .4; cursor: default; }
+
+  /* Finish screen */
+  #s-finish { gap: 20px; text-align:center; }
+  #s-finish h2 { font-size: clamp(1.8rem, 5vw, 2.8rem);
+    background: linear-gradient(135deg, var(--gold), var(--hair));
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  #s-finish p { color:#aaa; max-width:460px; line-height:1.7; }
+  #confetti-area { position:fixed; inset:0; z-index:5; pointer-events:none; }
+  .confetti-piece {
+    position: absolute; width:10px; height:10px; border-radius:2px;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    0%   { transform: translateY(-20px) rotate(0deg); opacity:1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity:0; }
+  }
+
+  /* ─── Color themes per step ─────────────────────────────── */
+  .theme-5 .step-num { background: var(--boxing); }
+  .theme-5 .card.selected { border-color: var(--boxing); box-shadow: 0 0 20px rgba(192,57,43,.5); }
+  .theme-5 .card:hover  { border-color: rgba(192,57,43,.4); }
+  .theme-4 .step-num { background: var(--river); }
+  .theme-4 .card.selected { border-color: var(--river); box-shadow: 0 0 20px rgba(26,122,138,.5); }
+  .theme-4 .card:hover  { border-color: rgba(26,122,138,.4); }
+  .theme-3 .step-num { background: var(--hair); }
+  .theme-3 .card.selected { border-color: var(--hair); box-shadow: 0 0 20px rgba(125,60,152,.5); }
+  .theme-3 .card:hover  { border-color: rgba(125,60,152,.4); }
+  .theme-2 .step-num { background: var(--gold); }
+  .theme-2 .card.selected { border-color: var(--gold); box-shadow: 0 0 20px rgba(212,172,13,.5); }
+  .theme-2 .card:hover  { border-color: rgba(212,172,13,.4); }
+  .theme-1 .step-num { background: linear-gradient(135deg,var(--boxing),var(--hair)); }
+  .theme-1 .card.selected { border-color: var(--gold); }
+
+  /* ─── Breathing instruction overlay ────────────────────── */
+  #breath-instruction {
+    font-size: 1.1rem; color: var(--river-l);
+    letter-spacing: 1px; animation: breatheText 8s ease-in-out infinite;
+  }
+  @keyframes breatheText {
+    0%,100% { content:''; }
+    0%    { opacity:1; } 5% { opacity:.3; }
+    20%   { opacity:1; } 40% { opacity:1; }
+    45%   { opacity:.4; } 60% { opacity:.4; }
+    65%   { opacity:1; } 95% { opacity:1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Stars -->
+<div id="stars"></div>
+
+<!-- Water waves -->
+<div id="water">
+  <svg class="wave" viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path d="M0,40 C360,80 720,0 1080,40 C1260,60 1380,50 1440,40 L1440,80 L0,80 Z"/>
+  </svg>
+  <svg class="wave" viewBox="0 0 1440 80" preserveAspectRatio="none">
+    <path d="M0,50 C300,20 600,70 900,40 C1100,20 1300,60 1440,50 L1440,80 L0,80 Z"/>
+  </svg>
+</div>
+
+<!-- Progress dots -->
+<div id="progress">
+  <div class="dot" id="d0"></div>
+  <div class="dot" id="d1"></div>
+  <div class="dot" id="d2"></div>
+  <div class="dot" id="d3"></div>
+  <div class="dot" id="d4"></div>
+  <div class="dot" id="d5"></div>
+  <div class="dot" id="d6"></div>
+</div>
+
+<!-- Nav -->
+<div class="nav" id="nav-bar" style="display:none">
+  <button class="nav-btn" id="btn-prev">← Atrás</button>
+  <button class="nav-btn" id="btn-next">Siguiente →</button>
+</div>
+
+<!-- Confetti -->
+<div id="confetti-area"></div>
+
+<!-- ══ SCREEN 0: Intro ══════════════════════════════════════════ -->
+<div class="screen" id="s-intro">
+  <div style="font-size:4rem; margin-bottom:8px; animation: pulse 2s infinite alternate">🥊🌊✂️</div>
+  <h1>Tu espacio seguro<br>5 · 4 · 3 · 2 · 1</h1>
+  <p>Cuando sientas que todo va muy rápido por dentro,<br>
+     esta técnica te ayuda a volver <strong>aquí</strong>, a tu cuerpo, a este momento.<br>
+     Solo necesitas <strong>un par de minutos</strong> y tus sentidos.</p>
+  <button class="btn" id="btn-start">Empezar ✨</button>
+  <p style="color:#555; font-size:.8rem; margin-top:8px">Diseñado especialmente para ti 💜</p>
+</div>
+
+<!-- ══ SCREEN 1: Respiración ════════════════════════════════════ -->
+<div class="screen hidden" id="s-breath">
+  <div id="breath-label">Primero… respira</div>
+  <div id="breath-circle">🌊</div>
+  <div id="breath-instruction">Inhala mientras crece · Mantén · Exhala mientras encoge</div>
+  <div id="breath-counter">3</div>
+  <div id="breath-text">Imagina el río. El agua nunca para. Tampoco tus pulmones.<br>
+    Haz <strong>3 respiraciones</strong> profundas con el círculo.</div>
+</div>
+
+<!-- ══ SCREEN 2: 5 VES ══════════════════════════════════════════ -->
+<div class="screen hidden step-screen theme-5" id="s5">
+  <div class="step-top">
+    <div class="step-num">5</div>
+    <div class="step-sense-icon">👁️</div>
+    <div class="step-heading">
+      <h2>5 cosas que <em>VES</em></h2>
+      <p>Mira a tu alrededor. ¿Qué ves ahora mismo?<br>Pulsa las que notes en este momento.</p>
+    </div>
+  </div>
+  <div class="cards" id="cards5">
+    <div class="card" data-val="guantes">
+      <!-- Boxing gloves SVG -->
+      <svg viewBox="0 0 64 64" fill="none">
+        <ellipse cx="24" cy="38" rx="16" ry="20" fill="#C0392B"/>
+        <ellipse cx="40" cy="38" rx="16" ry="20" fill="#922B21"/>
+        <rect x="20" y="52" width="8" height="10" rx="3" fill="#7B241C"/>
+        <rect x="36" y="52" width="8" height="10" rx="3" fill="#641E16"/>
+        <ellipse cx="24" cy="28" rx="10" ry="8" fill="#E74C3C" opacity=".4"/>
+        <ellipse cx="40" cy="28" rx="10" ry="8" fill="#C0392B" opacity=".4"/>
+        <text x="32" y="18" text-anchor="middle" font-size="10" fill="#FAD7A0">⚡</text>
+      </svg>
+      <span>Tus guantes o algo rojo</span>
+    </div>
+    <div class="card" data-val="agua">
+      <!-- River / water SVG -->
+      <svg viewBox="0 0 64 64" fill="none">
+        <path d="M4 36 Q16 26 28 36 Q40 46 52 36 Q58 30 60 28" stroke="#1A7A8A" stroke-width="3" stroke-linecap="round" fill="none"/>
+        <path d="M4 46 Q16 36 28 46 Q40 56 52 46 Q58 40 60 38" stroke="#AED6F1" stroke-width="3" stroke-linecap="round" fill="none" opacity=".7"/>
+        <circle cx="14" cy="20" r="4" fill="#AED6F1" opacity=".5"/>
+        <circle cx="32" cy="14" r="6" fill="#1A7A8A" opacity=".4"/>
+        <circle cx="50" cy="20" r="3" fill="#AED6F1" opacity=".5"/>
+        <text x="32" y="12" text-anchor="middle" font-size="14">🐟</text>
+      </svg>
+      <span>Agua o algo azul</span>
+    </div>
+    <div class="card" data-val="manos">
+      <!-- Hands / hairdressing SVG -->
+      <svg viewBox="0 0 64 64" fill="none">
+        <path d="M20 54 L20 30 Q20 24 26 24 L38 24 Q44 24 44 30 L44 54 Q44 58 32 58 Q20 58 20 54Z" fill="#7D3C98"/>
+        <rect x="24" y="18" width="4" height="16" rx="2" fill="#9B59B6"/>
+        <rect x="30" y="16" width="4" height="18" rx="2" fill="#8E44AD"/>
+        <rect x="36" y="18" width="4" height="16" rx="2" fill="#9B59B6"/>
+        <path d="M16 28 Q12 32 14 38 Q16 42 20 40" stroke="#7D3C98" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <path d="M48 28 Q52 32 50 38 Q48 42 44 40" stroke="#7D3C98" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <ellipse cx="32" cy="22" rx="10" ry="6" fill="#D7BDE2"/>
+        <text x="32" y="24" text-anchor="middle" font-size="8" fill="#7D3C98">✂️</text>
+      </svg>
+      <span>Algo violeta o una herramienta</span>
+    </div>
+    <div class="card" data-val="luz">
+      <div class="card-icon">☀️</div>
+      <span>Luz (lámpara, ventana, sol)</span>
+    </div>
+    <div class="card" data-val="persona">
+      <div class="card-icon">🪞</div>
+      <span>Tu reflejo o una persona cerca</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 3: 4 TOCAS ════════════════════════════════════════ -->
+<div class="screen hidden step-screen theme-4" id="s4">
+  <div class="step-top">
+    <div class="step-num">4</div>
+    <div class="step-sense-icon">🤚</div>
+    <div class="step-heading">
+      <h2>4 cosas que <em>TOCAS</em></h2>
+      <p>Toca algo con tu mano. Nota la textura, la temperatura.<br>¿Qué sientes físicamente?</p>
+    </div>
+  </div>
+  <div class="cards" id="cards4">
+    <div class="card" data-val="vendas">
+      <svg viewBox="0 0 64 64" fill="none">
+        <rect x="10" y="28" width="44" height="16" rx="8" fill="#E8D5B7"/>
+        <rect x="10" y="32" width="44" height="4" fill="#C0392B" opacity=".6"/>
+        <path d="M14 28 Q18 20 26 24 Q30 26 28 32" fill="#D5B896"/>
+        <path d="M50 28 Q46 20 38 24 Q34 26 36 32" fill="#C4A882"/>
+        <text x="32" y="52" text-anchor="middle" font-size="18">🥊</text>
+      </svg>
+      <span>Vendas o guantes · ásperas y firmes</span>
+    </div>
+    <div class="card" data-val="agua-fria">
+      <svg viewBox="0 0 64 64" fill="none">
+        <path d="M32 8 Q40 20 44 32 Q48 44 32 54 Q16 44 20 32 Q24 20 32 8Z" fill="#1A7A8A" opacity=".7"/>
+        <path d="M32 16 Q38 24 40 34 Q38 42 32 48 Q26 42 24 34 Q26 24 32 16Z" fill="#AED6F1" opacity=".5"/>
+        <text x="32" y="36" text-anchor="middle" font-size="16">💧</text>
+      </svg>
+      <span>Agua fría · como el río</span>
+    </div>
+    <div class="card" data-val="cepillo">
+      <svg viewBox="0 0 64 64" fill="none">
+        <rect x="12" y="22" width="40" height="20" rx="8" fill="#7D3C98"/>
+        <rect x="18" y="38" width="4" height="12" rx="2" fill="#5B2C6F"/>
+        <rect x="26" y="38" width="4" height="14" rx="2" fill="#5B2C6F"/>
+        <rect x="34" y="38" width="4" height="12" rx="2" fill="#5B2C6F"/>
+        <rect x="42" y="38" width="4" height="10" rx="2" fill="#5B2C6F"/>
+        <ellipse cx="32" cy="22" rx="14" ry="4" fill="#9B59B6" opacity=".5"/>
+      </svg>
+      <span>Cepillo de pelo · suave y denso</span>
+    </div>
+    <div class="card" data-val="suelo">
+      <div class="card-icon">🦶</div>
+      <span>El suelo bajo tus pies · sólido y firme</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 4: 3 ESCUCHAS ═════════════════════════════════════ -->
+<div class="screen hidden step-screen theme-3" id="s3">
+  <div class="step-top">
+    <div class="step-num">3</div>
+    <div class="step-sense-icon">👂</div>
+    <div class="step-heading">
+      <h2>3 cosas que <em>ESCUCHAS</em></h2>
+      <p>Cierra los ojos un momento. ¿Qué sonidos llegan?<br>Cerca y lejos.</p>
+    </div>
+  </div>
+  <div class="cards" id="cards3">
+    <div class="card" data-val="tijeras">
+      <svg viewBox="0 0 64 64" fill="none">
+        <!-- Scissors -->
+        <circle cx="20" cy="20" r="8" fill="none" stroke="#7D3C98" stroke-width="2.5"/>
+        <circle cx="44" cy="20" r="8" fill="none" stroke="#7D3C98" stroke-width="2.5"/>
+        <line x1="26" y1="26" x2="50" y2="50" stroke="#9B59B6" stroke-width="3" stroke-linecap="round"/>
+        <line x1="38" y1="26" x2="14" y2="50" stroke="#7D3C98" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="20" cy="20" r="4" fill="#D7BDE2"/>
+        <circle cx="44" cy="20" r="4" fill="#D7BDE2"/>
+        <text x="32" y="56" text-anchor="middle" font-size="10" fill="#D7BDE2">✂ clip clip</text>
+      </svg>
+      <span>Tijeras · clip clip clip</span>
+    </div>
+    <div class="card" data-val="rio-agua">
+      <svg viewBox="0 0 64 64" fill="none">
+        <path d="M4 44 Q16 34 28 44 Q40 54 52 44" stroke="#1A7A8A" stroke-width="3" fill="none" stroke-linecap="round"/>
+        <path d="M4 34 Q16 24 28 34 Q40 44 52 34" stroke="#AED6F1" stroke-width="2.5" fill="none" stroke-linecap="round" opacity=".8"/>
+        <path d="M4 54 Q16 44 28 54 Q40 64 52 54" stroke="#1A7A8A" stroke-width="2" fill="none" stroke-linecap="round" opacity=".5"/>
+        <!-- Sound waves -->
+        <path d="M28 10 Q32 6 36 10" stroke="#AED6F1" stroke-width="2" fill="none" stroke-linecap="round"/>
+        <path d="M24 14 Q32 6 40 14" stroke="#1A7A8A" stroke-width="2" fill="none" stroke-linecap="round" opacity=".6"/>
+        <path d="M20 18 Q32 6 44 18" stroke="#AED6F1" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".4"/>
+      </svg>
+      <span>Agua corriendo · el río en tu mente</span>
+    </div>
+    <div class="card" data-val="pasos">
+      <div class="card-icon">🎧</div>
+      <span>Música · o pasos · o tu propia respiración</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 5: 2 HUELES ═══════════════════════════════════════ -->
+<div class="screen hidden step-screen theme-2" id="s2">
+  <div class="step-top">
+    <div class="step-num">2</div>
+    <div class="step-sense-icon">👃</div>
+    <div class="step-heading">
+      <h2>2 cosas que <em>HUELES</em></h2>
+      <p>Inhala despacio. ¿Qué aromas están aquí ahora?</p>
+    </div>
+  </div>
+  <div class="cards" id="cards2">
+    <div class="card" data-val="champu">
+      <svg viewBox="0 0 64 64" fill="none">
+        <rect x="20" y="20" width="24" height="34" rx="8" fill="#9B59B6"/>
+        <rect x="24" y="12" width="16" height="12" rx="4" fill="#7D3C98"/>
+        <rect x="28" y="8" width="8" height="6" rx="3" fill="#5B2C6F"/>
+        <!-- Bubbles -->
+        <circle cx="12" cy="24" r="5" fill="#D7BDE2" opacity=".7"/>
+        <circle cx="52" cy="28" r="4" fill="#D7BDE2" opacity=".6"/>
+        <circle cx="10" cy="38" r="3" fill="#D7BDE2" opacity=".5"/>
+        <circle cx="54" cy="42" r="3.5" fill="#D7BDE2" opacity=".5"/>
+        <text x="32" y="42" text-anchor="middle" font-size="12" fill="#F5EEF8">✨</text>
+      </svg>
+      <span>Champú o acondicionador</span>
+    </div>
+    <div class="card" data-val="naturaleza">
+      <svg viewBox="0 0 64 64" fill="none">
+        <path d="M32 52 Q20 40 18 28 Q16 14 32 10 Q48 14 46 28 Q44 40 32 52Z" fill="#1A7A8A" opacity=".5"/>
+        <path d="M32 52 Q24 42 22 32 Q20 20 32 16 Q44 20 42 32 Q40 42 32 52Z" fill="#AED6F1" opacity=".4"/>
+        <!-- wavy scent lines -->
+        <path d="M20 8 Q22 4 24 8 Q26 12 28 8" stroke="#1A7A8A" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <path d="M36 6 Q38 2 40 6 Q42 10 44 6" stroke="#AED6F1" stroke-width="1.5" fill="none" stroke-linecap="round" opacity=".7"/>
+        <text x="32" y="36" text-anchor="middle" font-size="18">🌿</text>
+      </svg>
+      <span>Naturaleza · tierra · agua · aire fresco</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 6: 1 SABOR ════════════════════════════════════════ -->
+<div class="screen hidden step-screen theme-1" id="s1">
+  <div class="step-top">
+    <div class="step-num">1</div>
+    <div class="step-sense-icon">👅</div>
+    <div class="step-heading">
+      <h2>1 cosa que <em>SABOREAS</em></h2>
+      <p>¿Notas algún sabor en tu boca ahora mismo?<br>Aunque sea muy sutil.</p>
+    </div>
+  </div>
+  <div class="cards" id="cards1">
+    <div class="card" data-val="agua-fria-boca">
+      <div class="card-icon">💧</div>
+      <span>Agua fría · fresca como el río</span>
+    </div>
+    <div class="card" data-val="chicle">
+      <div class="card-icon">🍬</div>
+      <span>Un caramelo o chicle de menta</span>
+    </div>
+    <div class="card" data-val="nada">
+      <div class="card-icon">😌</div>
+      <span>Solo el sabor de este momento · y es suficiente</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 7: Finish ═════════════════════════════════════════ -->
+<div class="screen hidden" id="s-finish">
+  <div style="font-size:5rem; animation: bounceIn .8s ease">🏆</div>
+  <h2>¡Lo lograste!</h2>
+  <p>Acabas de traer tu mente de vuelta a este momento.<br>
+     Como una boxeadora que aguanta el asalto — <strong>tú aguantas</strong>.<br>
+     Como el río que sigue fluyendo — <strong>tú sigues</strong>.<br>
+     Como quien cuida su propio pelo — <strong>tú te cuidas</strong>.</p>
+  <div style="font-size: 1.6rem; color: var(--gold); margin: 8px 0">
+    Estás aquí. Estás a salvo. Estás entera. 💜
+  </div>
+  <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:12px">
+    <button class="btn" onclick="restart()" style="background:rgba(255,255,255,.1);color:white;box-shadow:none">
+      🔄 Volver a empezar
+    </button>
+    <button class="btn" onclick="window.print()">
+      🖨️ Guardar / Imprimir
+    </button>
+  </div>
+</div>
+
+<style>
+@keyframes pulse { from{transform:scale(1)} to{transform:scale(1.08)} }
+@keyframes bounceIn {
+  0%{transform:scale(.3);opacity:0}
+  50%{transform:scale(1.1)}
+  80%{transform:scale(.95)}
+  100%{transform:scale(1);opacity:1}
+}
+@media print {
+  #stars,#water,#nav-bar,#progress,#confetti-area { display:none !important; }
+  body { background: white; color: black; overflow:visible; }
+  .screen.hidden { display:none; }
+  .screen { position:relative; opacity:1 !important; transform:none !important; }
+}
+</style>
+
+<script>
+// ── Stars ────────────────────────────────────────────────────────
+(function spawnStars() {
+  const el = document.getElementById('stars');
+  for (let i = 0; i < 120; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      left:${Math.random()*100}%;
+      top:${Math.random()*90}%;
+      width:${size}px; height:${size}px;
+      --dur:${(Math.random()*4+2).toFixed(1)}s;
+      --op:${(Math.random()*.6+.1).toFixed(2)};
+      animation-delay:${(Math.random()*5).toFixed(1)}s;
+    `;
+    el.appendChild(s);
+  }
+})();
+
+// ── State ────────────────────────────────────────────────────────
+const SCREENS = ['s-intro','s-breath','s5','s4','s3','s2','s1','s-finish'];
+const NEED_SELECT = { s5:5, s4:4, s3:3, s2:2, s1:1 };
+let current = 0;
+
+// ── Navigation ───────────────────────────────────────────────────
+function show(idx) {
+  SCREENS.forEach((id, i) => {
+    document.getElementById(id).classList.toggle('hidden', i !== idx);
+  });
+  document.getElementById('nav-bar').style.display =
+    (idx === 0 || idx === SCREENS.length-1) ? 'none' : 'flex';
+  updateDots(idx);
+  updateNextBtn(idx);
+  if (idx === SCREENS.length-1) launchConfetti();
+  if (idx === 1) startBreathCounter();
+  current = idx;
+}
+
+function updateDots(idx) {
+  for (let i = 0; i < SCREENS.length; i++) {
+    const d = document.getElementById('d'+i);
+    d.classList.toggle('active', i === idx);
+    d.classList.toggle('done', i < idx);
+  }
+}
+
+function updateNextBtn(idx) {
+  const btn = document.getElementById('btn-next');
+  const screenId = SCREENS[idx];
+  const needed = NEED_SELECT[screenId];
+  if (!needed) { btn.disabled = false; return; }
+  const count = document.querySelectorAll(`#${screenId} .card.selected`).length;
+  btn.disabled = count < needed;
+  btn.textContent = count < needed
+    ? `Elige ${needed - count} más`
+    : (idx === SCREENS.length-2 ? '¡Finalizar! 🎉' : 'Siguiente →');
+}
+
+// ── Card selection ───────────────────────────────────────────────
+document.querySelectorAll('.cards').forEach(grid => {
+  const screenId = grid.closest('.screen').id;
+  const needed = NEED_SELECT[screenId];
+  grid.addEventListener('click', e => {
+    const card = e.target.closest('.card');
+    if (!card) return;
+    const selected = grid.querySelectorAll('.card.selected').length;
+    if (card.classList.contains('selected')) {
+      card.classList.remove('selected');
+    } else if (selected < needed) {
+      card.classList.add('selected');
+    }
+    updateNextBtn(current);
+  });
+});
+
+// ── Breath counter ───────────────────────────────────────────────
+let breathTimer;
+function startBreathCounter() {
+  let n = 3;
+  document.getElementById('breath-counter').textContent = n;
+  clearInterval(breathTimer);
+  breathTimer = setInterval(() => {
+    n--;
+    document.getElementById('breath-counter').textContent = n > 0 ? n : '✅';
+    if (n <= 0) {
+      clearInterval(breathTimer);
+      setTimeout(() => {
+        document.getElementById('btn-next').disabled = false;
+        document.getElementById('btn-next').textContent = '¡Listo! Siguiente →';
+      }, 1200);
+    }
+  }, 8000); // one cycle per breath (8s)
+  // Disable next until done
+  const btn = document.getElementById('btn-next');
+  btn.disabled = true;
+  btn.textContent = `Respira… (${n})`;
+}
+
+// ── Buttons ──────────────────────────────────────────────────────
+document.getElementById('btn-start').addEventListener('click', () => show(1));
+document.getElementById('btn-prev').addEventListener('click', () => {
+  if (current > 1) show(current - 1);
+});
+document.getElementById('btn-next').addEventListener('click', () => {
+  if (current < SCREENS.length - 1) show(current + 1);
+});
+
+function restart() {
+  document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+  show(0);
+}
+
+// ── Confetti ─────────────────────────────────────────────────────
+function launchConfetti() {
+  const area = document.getElementById('confetti-area');
+  area.innerHTML = '';
+  const colors = ['#C0392B','#1A7A8A','#7D3C98','#D4AC0D','#AED6F1','#D7BDE2','#E74C3C'];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `
+      left: ${Math.random()*100}%;
+      top: ${-(Math.random()*20+10)}px;
+      background: ${colors[Math.floor(Math.random()*colors.length)]};
+      width: ${Math.random()*10+5}px;
+      height: ${Math.random()*10+5}px;
+      border-radius: ${Math.random() > .5 ? '50%' : '2px'};
+      animation: fall ${(Math.random()*3+2).toFixed(1)}s ${(Math.random()*2).toFixed(1)}s linear forwards;
+    `;
+    area.appendChild(p);
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+show(0);
+// Advance breath screen next btn after setup
+document.getElementById('btn-next').disabled = true;
+</script>
+</body>
+</html>
