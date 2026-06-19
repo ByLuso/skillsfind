@@ -1,0 +1,36 @@
+<svg width="460" height="110" viewBox="0 0 460 110"
+     xmlns="http://www.w3.org/2000/svg" role="img"
+     aria-label="Luis Martínez — Enfermero">
+
+  <!-- Monogram badge -->
+  <circle cx="55" cy="55" r="50" fill="#002D5F"/>
+  <!-- inner ring accent -->
+  <circle cx="55" cy="55" r="44" fill="none" stroke="#1565C0" stroke-width="2"/>
+  <!-- LM initials -->
+  <text x="55" y="67"
+        font-family="Liberation Sans, Arial, sans-serif"
+        font-size="30" font-weight="bold"
+        fill="white" text-anchor="middle"
+        letter-spacing="1">LM</text>
+
+  <!-- Vertical divider -->
+  <line x1="122" y1="18" x2="122" y2="92"
+        stroke="#90A4AE" stroke-width="1.5"/>
+
+  <!-- Name -->
+  <text x="140" y="52"
+        font-family="Liberation Sans, Arial, sans-serif"
+        font-size="30" font-weight="bold"
+        fill="#002D5F" letter-spacing="0.5">Luis Martínez</text>
+
+  <!-- Profession -->
+  <text x="142" y="76"
+        font-family="Liberation Sans, Arial, sans-serif"
+        font-size="16" fill="#00695C" letter-spacing="2">ENFERMERO</text>
+
+  <!-- Accent underline -->
+  <line x1="140" y1="86" x2="452" y2="86"
+        stroke="#1565C0" stroke-width="2.5"/>
+  <!-- small teal dot at end -->
+  <circle cx="452" cy="86" r="3.5" fill="#00695C"/>
+</svg>

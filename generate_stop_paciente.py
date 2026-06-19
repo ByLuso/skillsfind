@@ -46,10 +46,23 @@ def draw_page(c, doc):
     c.setFont('Helvetica', 9)
     c.setFillColor(colors.HexColor('#AECBF0'))
     c.drawCentredString(W/2, H - 22*mm, 'Una pausa consciente que puedes usar en cualquier momento y lugar')
-    # Footer
+    # Footer with logo
+    from reportlab.lib.utils import ImageReader
+    try:
+        logo = ImageReader('/home/user/skillsfind/logo_luis_martinez.png')
+        logo_w, logo_h = 46*mm, 11*mm
+        c.drawImage(logo, MARGIN, 5*mm, width=logo_w, height=logo_h,
+                    mask='auto', preserveAspectRatio=True, anchor='sw')
+    except Exception:
+        c.setFillColor(NAVY)
+        c.setFont('Helvetica-Bold', 7)
+        c.drawString(MARGIN, 9*mm, 'Luis Martínez')
+        c.setFillColor(TEAL)
+        c.setFont('Helvetica', 6.5)
+        c.drawString(MARGIN, 4*mm, 'Enfermero')
     c.setFillColor(GRAY_M)
     c.setFont('Helvetica', 6.5)
-    c.drawCentredString(W/2, 8*mm, 'Técnica S.T.O.P. · Adaptado de MBSR (Kabat-Zinn) · Uso terapéutico')
+    c.drawRightString(W - MARGIN, 8*mm, 'Adaptado de MBSR (Kabat-Zinn) · Uso terapéutico')
 
 
 def S(name, **kw):

@@ -59,10 +59,19 @@ def page2_canvas(c, doc):
     _footer(c, doc, 2)
 
 def _footer(c, doc, pg):
+    from reportlab.lib.utils import ImageReader
+    try:
+        logo = ImageReader('/home/user/skillsfind/logo_luis_martinez.png')
+        c.drawImage(logo, MARGIN, 4*mm, width=46*mm, height=11*mm,
+                    mask='auto', preserveAspectRatio=True, anchor='sw')
+    except Exception:
+        c.setFillColor(DARK_BLUE)
+        c.setFont('Helvetica-Bold', 7)
+        c.drawString(MARGIN, 9*mm, 'Luis Martínez · Enfermero')
     c.setFillColor(GRAY_M)
     c.setFont('Helvetica', 6.5)
-    c.drawCentredString(W/2, 7*mm,
-        f'Técnica S.T.O.P. · Uso clínico interno · Adaptado de MBSR (Kabat-Zinn) y ACT (Hayes)   |   pág. {pg}')
+    c.drawRightString(W - MARGIN, 7*mm,
+        f'Técnica S.T.O.P. · MBSR (Kabat-Zinn) / ACT (Hayes)   |   pág. {pg}')
 
 
 # ── Style factory ────────────────────────────────────────────────────────────
